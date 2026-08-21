@@ -5,8 +5,7 @@
 body{font-family:system-ui;margin:0;background:#f4f7fb;color:#172033}.wrap{max-width:1100px;margin:auto;padding:22px 16px}.card{background:#fff;padding:20px;border-radius:18px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.full{grid-column:1/-1}label{font-size:13px;font-weight:700;display:block;margin-bottom:6px}input,select{width:100%;padding:11px;border:1px solid #d7deea;border-radius:10px;box-sizing:border-box}.actions{margin-top:18px}button{background:#2563eb;color:#fff;border:0;padding:12px 18px;border-radius:10px;font-weight:800}.status{margin-top:15px;padding:12px;background:#f5f8fc;border-radius:10px}.results{margin-top:15px;display:grid;gap:12px}.car{border:1px solid #e1e7f0;border-radius:14px;padding:14px;display:grid;grid-template-columns:110px 1fr auto;gap:14px;align-items:center}.car img{width:110px;height:80px;object-fit:cover;border-radius:9px;background:#eee}.price{font-weight:900;font-size:19px}.eur{color:#2563eb;font-weight:800}.meta{color:#667085;font-size:13px}.tag{background:#e9f8ef;color:#167447;padding:7px;border-radius:8px;font-weight:800;font-size:12px}.autocomplete{position:relative}.menu{position:absolute;z-index:5;left:0;right:0;background:#fff;border:1px solid #d7deea;border-radius:10px;display:none;max-height:220px;overflow:auto}.menu div{padding:10px;cursor:pointer}.menu div:hover{background:#eef4ff}@media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.car{grid-template-columns:80px 1fr}.car img{width:80px;height:65px}}
 </style></head><body><div class="wrap"><div class="card">
 <h1>Korea Auto Finder</h1><p>Реално търсене на Encar през защитен API слой.</p>
-<div class="grid">
-<div class="autocomplete"><label>Марка</label><input id="make" autocomplete="off" placeholder="Hyundai" oninput="suggestMakes()" onclick="suggestMakes()"><div id="makeMenu" class="menu"></div></div>
+<div class="full"><label>Пазар / източник</label><select id="source"><option value="all">🌍 Всички — Корея + САЩ</option><option value="korea">🇰🇷 Корея</option><option value="usa">🇺🇸 САЩ</option></select></div><div class="autocomplete"><label>Марка</label><input id="make" autocomplete="off" placeholder="Hyundai" oninput="suggestMakes()" onclick="suggestMakes()"><div id="makeMenu" class="menu"></div></div>
 <div class="autocomplete"><label>Модел</label><input id="model" autocomplete="off" placeholder="Избери марка" oninput="suggestModels()" onclick="suggestModels()"><div id="modelMenu" class="menu"></div></div>
 <div><label>Цена до (€)</label><input id="price" type="number" placeholder="20000"></div>
 <div><label>Година от</label><input id="yf" type="number" placeholder="2021"></div>
@@ -16,22 +15,7 @@ body{font-family:system-ui;margin:0;background:#f4f7fb;color:#172033}.wrap{max-w
 <div><label>Скоростна кутия</label><select id="transmission"><option value="">Всички</option><option value="auto">Автоматик</option><option value="manual">Ръчна</option></select></div>
 <div><label>Брой резултати</label><select id="limit"><option>5</option><option selected>10</option><option>20</option></select></div>
 </div>
-<div class="full" style="margin-top:8px;border-top:1px solid #e1e7f0;padding-top:16px">
-<h2 style="margin:0 0 10px">🇧🇬 Калкулатор „Цена до България“</h2>
-<div class="grid">
-<div><label>Курс KRW → € (ориентировъчен)</label><input id="fx" type="number" value="1620.54" step="0.01"></div>
-<div><label>Транспорт Корея → България (€)</label><input id="shipping" type="number" value="1800"></div>
-<div><label>Застраховка транспорт (€)</label><input id="insurance" type="number" value="150"></div>
-<div><label>Пристанищни/терминални (€)</label><input id="port" type="number" value="350"></div>
-<div><label>Митнически агент (€)</label><input id="broker" type="number" value="150"></div>
-<div><label>Мито (%)</label><input id="duty" type="number" value="0" step="0.1"></div>
-<div><label>ДДС (%)</label><input id="vat" type="number" value="20" step="0.1"></div>
-<div><label>Хомологация/технически (€)</label><input id="homologation" type="number" value="250"></div>
-<div><label>Регистрация/КАТ (€)</label><input id="registration" type="number" value="100"></div>
-</div>
-<div class="rate" style="margin-top:10px">Митото е редактируемо. При валиден преференциален произход по споразумението ЕС–Корея може да е 0%; при липса на преференция може да се приложи стандартната ставка. Потвърждаваме ставката за конкретния автомобил преди покупка.</div>
-</div>
-<div class="actions"><button onclick="searchCars()">🔎 Търси реални обяви</button></div>
+<div class="full" style="border-top:1px solid #e1e7f0;padding-top:14px;margin-top:8px"><b>🇧🇬 Калкулатор цена до България</b><div class="grid" style="margin-top:10px"><div><label>KRW → €</label><input id="fx" type="number" value="1620.54"></div><div><label>USD → €</label><input id="usd_eur" type="number" value="0.86" step="0.001"></div><div><label>Транспорт Корея (€)</label><input id="shipping" type="number" value="1800"></div><div><label>Транспорт САЩ (€)</label><input id="shipping_us" type="number" value="2200"></div><div><label>Застраховка (€)</label><input id="insurance" type="number" value="150"></div><div><label>Мито (%)</label><input id="duty" type="number" value="0"></div><div><label>ДДС (%)</label><input id="vat" type="number" value="20"></div><div><label>Пристанище (€)</label><input id="port" type="number" value="350"></div><div><label>Митнически агент (€)</label><input id="broker" type="number" value="150"></div><div><label>Хомологация (€)</label><input id="homologation" type="number" value="250"></div><div><label>Регистрация (€)</label><input id="registration" type="number" value="100"></div></div></div><div class="actions"><button onclick="searchCars()">🔎 Търси реални обяви</button></div>
 <div id="status" class="status" style="display:none"></div><div id="results" class="results"></div>
 </div></div>
 <script>
@@ -43,50 +27,9 @@ function suggestModels(){let a=catalog[make.value]||[],q=model.value.toLowerCase
 function chooseModel(x){model.value=x;document.getElementById("modelMenu").style.display="none"}
 document.addEventListener("click",e=>{if(!e.target.closest(".autocomplete")){makeMenu.style.display="none";modelMenu.style.display="none"}})
 function n(id){return Number(document.getElementById(id)?.value)||0}
-function euro(krw){return n("fx")?Number(krw)/n("fx"):0}
-function landed(krw){
- const car=euro(krw), ship=n("shipping"), insurance=n("insurance"), port=n("port"), broker=n("broker");
- const duty=(car+ship+insurance)*(n("duty")/100);
- const vat=(car+ship+insurance+duty)*(n("vat")/100);
- const total=car+ship+insurance+duty+vat+port+broker+n("homologation")+n("registration");
- return {car,ship,duty,vat,total};
-}
 function money(v){return "€ "+Number(v).toLocaleString("bg-BG",{maximumFractionDigits:0})}
-let lastSearchKey="",lastSearchAt=0,lastSearchData=null;
-async function searchCars(){
- const status=document.getElementById("status"),out=document.getElementById("results");
- const p=new URLSearchParams();
- if(make.value)p.set("brand",make.value);if(model.value)p.set("model",model.value);
- if(price.value)p.set("price_max",Math.round(Number(price.value)*n("fx")));
- if(yf.value)p.set("year_from",yf.value);if(yt.value)p.set("year_to",yt.value);
- if(km.value)p.set("mileage_max",km.value);if(fuel.value)p.set("fuel_type",fuel.value);
- if(transmission.value)p.set("transmission",transmission.value);p.set("limit",limit.value);p.set("lang","en");
- const key=p.toString(), now=Date.now();
- status.style.display="block";out.innerHTML="";
- if(lastSearchData && key===lastSearchKey && now-lastSearchAt<60000){
-   status.textContent="Показвам кеширания резултат — не използвах нова API заявка.";
-   renderResults(lastSearchData); return;
- }
- status.textContent="Търся реални обяви…";
- try{
-   let r=await fetch("/api/search?"+key);let d=await r.json();
-   if(!r.ok)throw new Error(d.error||"Грешка");
-   lastSearchKey=key;lastSearchAt=now;lastSearchData=d;
-   status.textContent=`Намерени ${d.total_count??d.results.length} обяви. Показвам ${d.results.length}.`;
-   renderResults(d);
- }catch(e){status.textContent="Неуспешно търсене: "+e.message}
-}
-function renderResults(d){
- const out=document.getElementById("results");
- d.results.forEach(c=>{
-   const x=landed(c.price_krw||0);
-   let el=document.createElement("div");el.className="car";
-   el.innerHTML=`<img src="${c.thumbnail||""}" onerror="this.style.visibility='hidden'">
-   <div><b>${c.manufacturer||""} ${c.model||""}</b><div class="meta">${c.badge||""}</div>
-   <div class="meta">${c.year||"—"} • ${(c.mileage_km||0).toLocaleString("bg-BG")} км • ${c.fuel_type||"—"} • ${c.transmission||"—"}</div>
-   <div class="price">${Number(c.price_krw||0).toLocaleString("ko-KR")} ₩ <span class="eur">≈ ${money(x.car)}</span></div>
-   <div style="margin-top:8px;padding:9px;background:#f5f8fc;border-radius:9px;font-size:13px"><b>Цена до България:</b> ${money(x.total)}<br>Транспорт: ${money(x.ship)} • Мито: ${money(x.duty)} • ДДС: ${money(x.vat)}</div></div>
-   <div><a class="tag" href="${c.encar_url||"#"}" target="_blank">Обявата ↗</a></div>`;
-   out.appendChild(el)
- })
-}</script></body></html>
+function landed(price,country){const ship=country==="US"?n("shipping_us"):n("shipping"),ins=n("insurance"),d=(price+ship+ins)*(n("duty")/100),v=(price+ship+ins+d)*(n("vat")/100);return {ship,duty:d,vat:v,total:price+ship+ins+d+v+n("port")+n("broker")+n("homologation")+n("registration")}}
+let lastKey="",lastAt=0,lastData=null;
+async function searchCars(){const status=document.getElementById("status"),out=document.getElementById("results");status.style.display="block";out.innerHTML="";const p=new URLSearchParams();p.set("source",document.getElementById("source").value);if(make.value)p.set("brand",make.value);if(model.value)p.set("model",model.value);if(price.value)p.set("price_max",Math.round(Number(price.value)*n("fx")));if(yf.value)p.set("year_from",yf.value);if(yt.value)p.set("year_to",yt.value);if(km.value)p.set("mileage_max",km.value);if(fuel.value)p.set("fuel_type",fuel.value);if(transmission.value)p.set("transmission",transmission.value);p.set("limit",limit.value);const key=p.toString(),now=Date.now();if(lastData&&key===lastKey&&now-lastAt<60000){status.textContent="Кеширан резултат — без нова API заявка.";return renderResults(lastData)}status.textContent="Търся в избраните пазари…";try{const r=await fetch("/api/search?"+p),d=await r.json();if(!r.ok)throw Error(d.error||"Грешка");lastKey=key;lastAt=now;lastData=d;status.textContent=`Намерени ${d.total_count} обяви.`+(d.errors?.length?" "+d.errors.join(" | "):"");renderResults(d)}catch(e){status.textContent="Неуспешно търсене: "+e.message}}
+function renderResults(d){const out=document.getElementById("results");d.results.forEach(c=>{const price=c.country==="US"?Number(c.price_usd||0)*n("usd_eur"):Number(c.price_krw||0)/n("fx"),x=landed(price,c.country),orig=c.country==="US"?`$${Number(c.price_usd||0).toLocaleString("en-US")} ≈ ${money(price)}`:`${Number(c.price_krw||0).toLocaleString("ko-KR")} ₩ ≈ ${money(price)}`,flag=c.country==="US"?"🇺🇸":"🇰🇷";const el=document.createElement("div");el.className="car";el.innerHTML=`<img src="${c.thumbnail||""}" onerror="this.style.visibility='hidden'"><div><b>${flag} ${c.manufacturer||""} ${c.model||""}</b><div class="meta">${c.year||"—"} • ${(c.mileage_km||0).toLocaleString("bg-BG")} км • ${c.fuel_type||"—"} • ${c.transmission||"—"}</div><div class="price">${orig}</div><div style="margin-top:8px;padding:9px;background:#f5f8fc;border-radius:9px;font-size:13px"><b>🇧🇬 Цена до България: ${money(x.total)}</b><br>Транспорт: ${money(x.ship)} • Мито: ${money(x.duty)} • ДДС: ${money(x.vat)}</div></div><div><a class="tag" href="${c.listing_url||"#"}" target="_blank">Обявата ↗</a></div>`;out.appendChild(el)})}
+</script></body></html>
