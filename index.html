@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="bg"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Korea Auto Finder</title>
+<style>
+body{font-family:system-ui;margin:0;background:#f4f7fb;color:#172033}.wrap{max-width:1100px;margin:auto;padding:22px 16px}.card{background:#fff;padding:20px;border-radius:18px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.full{grid-column:1/-1}label{font-size:13px;font-weight:700;display:block;margin-bottom:6px}input,select{width:100%;padding:11px;border:1px solid #d7deea;border-radius:10px;box-sizing:border-box}.actions{margin-top:18px}button{background:#2563eb;color:#fff;border:0;padding:12px 18px;border-radius:10px;font-weight:800}.status{margin-top:15px;padding:12px;background:#f5f8fc;border-radius:10px}.results{margin-top:15px;display:grid;gap:12px}.car{border:1px solid #e1e7f0;border-radius:14px;padding:14px;display:grid;grid-template-columns:110px 1fr auto;gap:14px;align-items:center}.car img{width:110px;height:80px;object-fit:cover;border-radius:9px;background:#eee}.price{font-weight:900;font-size:19px}.eur{color:#2563eb;font-weight:800}.meta{color:#667085;font-size:13px}.tag{background:#e9f8ef;color:#167447;padding:7px;border-radius:8px;font-weight:800;font-size:12px}.autocomplete{position:relative}.menu{position:absolute;z-index:5;left:0;right:0;background:#fff;border:1px solid #d7deea;border-radius:10px;display:none;max-height:220px;overflow:auto}.menu div{padding:10px;cursor:pointer}.menu div:hover{background:#eef4ff}@media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.car{grid-template-columns:80px 1fr}.car img{width:80px;height:65px}}
+</style></head><body><div class="wrap"><div class="card">
+<h1>Korea Auto Finder</h1><p>Реално търсене на Encar през защитен API слой.</p>
+<div class="grid">
+<div class="autocomplete"><label>Марка</label><input id="make" autocomplete="off" placeholder="Hyundai" oninput="suggestMakes()" onclick="suggestMakes()"><div id="makeMenu" class="menu"></div></div>
+<div class="autocomplete"><label>Модел</label><input id="model" autocomplete="off" placeholder="Избери марка" oninput="suggestModels()" onclick="suggestModels()"><div id="modelMenu" class="menu"></div></div>
+<div><label>Цена до (€)</label><input id="price" type="number" placeholder="20000"></div>
+<div><label>Година от</label><input id="yf" type="number" placeholder="2021"></div>
+<div><label>Година до</label><input id="yt" type="number" placeholder="2024"></div>
+<div><label>Пробег до (км)</label><input id="km" type="number" placeholder="100000"></div>
+<div><label>Двигател</label><select id="fuel"><option value="">Всички</option><option value="diesel">Дизел</option><option value="gasoline">Бензин</option><option value="hybrid">Хибрид</option><option value="electric">Електрически</option><option value="lpg">LPG</option></select></div>
+<div><label>Скоростна кутия</label><select id="transmission"><option value="">Всички</option><option value="auto">Автоматик</option><option value="manual">Ръчна</option></select></div>
+<div><label>Брой резултати</label><select id="limit"><option>5</option><option selected>10</option><option>20</option></select></div>
+</div>
+<div class="actions"><button onclick="searchCars()">🔎 Търси реални обяви</button></div>
+<div id="status" class="status" style="display:none"></div><div id="results" class="results"></div>
+</div></div>
+<script>
+const catalog={"Hyundai":["Avante","Sonata","Grandeur","Tucson","Santa Fe","Palisade","Kona","Staria","Ioniq 5","Ioniq 6"],"Kia":["K3","K5","K8","Sportage","Sorento","Carnival","Seltos","EV6","EV9"],"Genesis":["G70","G80","G90","GV60","GV70","GV80"],"Chevrolet":["Spark","Malibu","Trailblazer","Equinox","Traverse","Tahoe"],"KG Mobility":["Tivoli","Korando","Torres","Rexton","Musso"],"Renault Korea":["SM3","SM5","SM6","QM3","QM6","XM3"],"BMW":["1 Series","3 Series","5 Series","7 Series","X1","X3","X5","X7"],"Mercedes-Benz":["A-Class","C-Class","E-Class","S-Class","GLC","GLE","GLS"],"Audi":["A3","A4","A6","A8","Q3","Q5","Q7","Q8"]};
+function menu(id,items,fn){let m=document.getElementById(id);m.innerHTML=items.map(x=>`<div onclick="${fn}('${x.replace(/'/g,"\\'")}')">${x}</div>`).join("");m.style.display=items.length?"block":"none"}
+function suggestMakes(){let q=make.value.toLowerCase();menu("makeMenu",Object.keys(catalog).filter(x=>x.toLowerCase().includes(q)),"chooseMake")}
+function chooseMake(x){make.value=x;model.value="";model.placeholder="Напиши модел...";document.getElementById("makeMenu").style.display="none"}
+function suggestModels(){let a=catalog[make.value]||[],q=model.value.toLowerCase();menu("modelMenu",a.filter(x=>x.toLowerCase().includes(q)),"chooseModel")}
+function chooseModel(x){model.value=x;document.getElementById("modelMenu").style.display="none"}
+document.addEventListener("click",e=>{if(!e.target.closest(".autocomplete")){makeMenu.style.display="none";modelMenu.style.display="none"}})
+function euro(krw){return "€ "+(Number(krw)/1620.54).toLocaleString("bg-BG",{maximumFractionDigits:0})}
+async function searchCars(){
+ const status=document.getElementById("status"),out=document.getElementById("results");status.style.display="block";out.innerHTML="";status.textContent="Търся реални обяви в Encar…";
+ const p=new URLSearchParams(); if(make.value)p.set("brand",make.value);if(model.value)p.set("model",model.value);
+ if(price.value)p.set("price_max",Math.round(Number(price.value)*1620.54));if(yf.value)p.set("year_from",yf.value);if(yt.value)p.set("year_to",yt.value);
+ if(km.value)p.set("mileage_max",km.value);if(fuel.value)p.set("fuel_type",fuel.value);if(transmission.value)p.set("transmission",transmission.value);p.set("limit",limit.value);p.set("lang","en");
+ try{let r=await fetch("/api/search?"+p);let d=await r.json();if(!r.ok)throw new Error(d.error||"Грешка");
+ status.textContent=`Намерени ${d.total_count??d.results.length} обяви. Показвам ${d.results.length}.`;
+ d.results.forEach(c=>{let el=document.createElement("div");el.className="car";el.innerHTML=`<img src="${c.thumbnail||""}" onerror="this.style.visibility='hidden'"><div><b>${c.manufacturer||""} ${c.model||""}</b><div class="meta">${c.badge||""}</div><div class="meta">${c.year||"—"} • ${(c.mileage_km||0).toLocaleString("bg-BG")} км • ${c.fuel_type||"—"} • ${c.transmission||"—"}</div><div class="price">${Number(c.price_krw||0).toLocaleString("ko-KR")} ₩ <span class="eur">≈ ${euro(c.price_krw)}</span></div></div><div><a class="tag" href="${c.encar_url||"#"}" target="_blank">Обявата ↗</a></div>`;out.appendChild(el)})}
+ catch(e){status.textContent="Неуспешно търсене: "+e.message+". Провери API ключа и стартирай backend сървъра."}
+}
+</script></body></html>
