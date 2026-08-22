@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Korea Auto Finder</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#172033;background:#f4f7fb}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:1100px;margin:auto;padding:22px 16px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.logo{font-size:25px;font-weight:900}.logo b{color:#2563eb}
+.pill{padding:7px 11px;border-radius:999px;background:#eaf1ff;color:#2563eb;font-weight:800;font-size:12px}
+.card{background:#fff;border:1px solid #e1e7f0;border-radius:18px;padding:20px;box-shadow:0 8px 30px #14213d0b}
+h1{margin:0 0 6px;font-size:29px}p{margin:0;color:#667085}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:18px}
+label{font-size:13px;font-weight:750;color:#475467;display:block;margin-bottom:6px}
+input,select{width:100%;padding:11px 12px;border:1px solid #d7deea;border-radius:10px;font-size:15px;background:#fff}
+.full{grid-column:1/-1}.checks{display:flex;gap:8px;flex-wrap:wrap}.check{border:1px solid #d7deea;border-radius:10px;padding:9px 11px;background:#fff}.check input{width:auto}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}button,.link{display:inline-block;border:0;border-radius:10px;padding:12px 16px;font-weight:850;font-size:14px;text-decoration:none;cursor:pointer}
+button{background:#2563eb;color:#fff}.secondary{background:#edf1f6;color:#344054}.site{background:#111827;color:#fff}
+.status{display:none;margin-top:15px;padding:12px;border-radius:10px;background:#f5f8fc;color:#475467}
+.results{display:grid;gap:11px;margin-top:15px}.result{border:1px solid #e1e7f0;border-radius:14px;padding:14px;display:flex;justify-content:space-between;gap:14px;align-items:center}
+.result h3{margin:0 0 5px}.meta{color:#667085;font-size:13px}.price{font-weight:900;font-size:19px;margin-top:5px}.tag{font-size:12px;font-weight:800;background:#e9f8ef;color:#167447;padding:6px 8px;border-radius:8px;white-space:nowrap}
+.note{margin-top:14px;padding:12px;background:#fff8e7;border:1px solid #f5df9d;border-radius:10px;color:#694f00;font-size:13px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.result{display:block}.tag{display:inline-block;margin-top:8px}}
+
+.autocomplete{position:relative}.menu{position:absolute;z-index:20;left:0;right:0;top:68px;background:#fff;border:1px solid #d7deea;border-radius:10px;box-shadow:0 12px 25px #14213d18;display:none;max-height:230px;overflow:auto}
+.menu div{padding:11px 12px;cursor:pointer}.menu div:hover{background:#f1f5ff}
+
+.eur{font-size:14px;font-weight:800;color:#2563eb;margin-top:3px}
+.rate{font-size:12px;color:#667085;margin-top:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="logo">Korea <b>Auto Finder</b></div><div class="pill">МОЯ ТЪРСАЧКА</div></header>
+<section class="card">
+<h1>Търсене на автомобили от Корея</h1>
+<p>Въвеждаш критериите веднъж. Системата подготвя търсене за корейските платформи и пази резултатите за преглед.</p>
+
+<div class="grid">
+<div class="autocomplete">
+<label>Марка</label>
+<input id="make" placeholder="Започни да пишеш: Hyundai, Kia..." autocomplete="off" oninput="suggestMakes()" onclick="suggestMakes()">
+<div id="makeMenu" class="menu"></div>
+</div>
+<div class="autocomplete">
+<label>Модел</label>
+<input id="modelInput" placeholder="Избери марка, после напиши модел..." autocomplete="off" oninput="suggestModels()" onclick="suggestModels()">
+<select id="model" style="display:none"><option value=""></option></select>
+<div id="modelMenu" class="menu"></div>
+</div>
+<div><label>Цена до (€)</label><input id="price" type="number" placeholder="20000" oninput="updatePriceHint()">
+<div id="priceHint" class="rate">≈ ₩ —</div></div>
+<div><label>Година от</label><input id="yf" type="number" placeholder="2021"></div>
+<div><label>Година до</label><input id="yt" type="number" placeholder="2024"></div>
+<div><label>Пробег до (км)</label><input id="km" type="number" placeholder="100000"></div>
+<div class="full"><label>🚢 Реална ориентировъчна цена до България</label>
+<div class="grid" style="margin-top:8px">
+<div><label>Транспорт Корея → България (€)</label><input id="shipping" type="number" value="1800" oninput="calculateLanded()"></div>
+<div><label>Застраховка транспорт (€)</label><input id="insurance" type="number" value="150" oninput="calculateLanded()"></div>
+<div><label>Пристанищни/терминални (€)</label><input id="port" type="number" value="350" oninput="calculateLanded()"></div>
+<div><label>Митнически агент (€)</label><input id="broker" type="number" value="150" oninput="calculateLanded()"></div>
+<div><label>Произход на автомобила</label><select id="origin" onchange="updateDutyFromOrigin()"><option value="korea" selected>🇰🇷 Корейски произход — 0% мито</option><option value="other">Друг произход — 10% мито</option></select></div>
+<div><label>Мито (%)</label><input id="duty" type="number" value="0" step="0.1"  readonly></div>
+<div><label>ДДС (%)</label><input id="vat" type="number" value="20" step="0.1" oninput="calculateLanded()"></div>
+<div><label>Хомологация/технически разходи (€)</label><input id="homologation" type="number" value="250" oninput="calculateLanded()"></div>
+<div><label>Регистрация/КАТ (€)</label><input id="registration" type="number" value="100" oninput="calculateLanded()"></div>
+<div><label>Други разходи (€)</label><input id="other" type="number" value="200" oninput="calculateLanded()"></div>
+<div><label>Крайна ориентировъчна цена (€)</label><input id="landed" readonly placeholder="—"></div>
+</div>
+<div class="rate">При автомобил с доказан корейски преференциален произход калкулаторът прилага 0% мито по споразумението ЕС–Южна Корея. При автомобил с друг произход прилага ориентировъчно 10% стандартно мито. За 0% трябва да има валидно доказателство за преференциален произход; самият факт, че автомобилът е купен или се намира в Корея, не е достатъчен. ДДС се начислява върху съответната митническа основа. citeturn0search0turn0search2</div>
+</div>
+<div class="full"><label>Двигател</label><div class="checks">
+<label class="check"><input type="checkbox" value="Дизел">Дизел</label>
+<label class="check"><input type="checkbox" value="Бензин">Бензин</label>
+<label class="check"><input type="checkbox" value="Хибрид">Хибрид</label>
+<label class="check"><input type="checkbox" value="Електрически">Електрически</label>
+<label class="check"><input type="checkbox" value="LPG">LPG</label>
+<label class="check"><input type="checkbox" value="CNG">CNG</label>
+</div></div>
+<div><label>Скоростна кутия</label><select id="gear"><option>Всички</option><option>Автоматик</option><option>Ръчна</option></select></div>
+<div><label>Резултати</label><select id="count"><option>5</option><option selected>10</option><option>20</option></select></div>
+<div><label>Сайт</label><select id="source"><option value="korea">🇰🇷 Корея</option></select></div>
+</div>
+
+<div class="actions">
+<button onclick="runSearch()">🔎 Търси</button>
+<button class="secondary" onclick="clearAll()">Изчисти</button>
+<a class="link site" id="encarBtn" href="https://www.encar.com/" target="_blank" rel="noopener">Encar ↗</a>
+<a class="link site" id="kbBtn" href="https://www.kbchachacha.com/" target="_blank" rel="noopener">KB차차차 ↗</a>
+</div>
+
+<div id="status" class="status"></div>
+<div id="results" class="results"></div>
+<div class="note">Важно: официалните сайтове не предоставят свободен публичен API за директно вграждане на всички обяви в статичен HTML. Затова тази версия изгражда реалните търсения и отваря платформите. За напълно автоматично сканиране на нови обяви ще добавим малък backend/автоматизация, която да спазва условията на сайтовете.</div>
+<div class="note" style="margin-top:10px;background:#eef5ff;border-color:#cbdcff;color:#21457a">
+💶 Цените се показват и в евро автоматично. За тази версия е използван курс 1 EUR = 1 620,54 KRW (21.08.2026). citeturn0search1
+</div>
+</section>
+</div>
+
+<script>
+const catalog={
+"Hyundai":["Avante","Sonata","Grandeur","Tucson","Santa Fe","Palisade","Kona","Staria","Ioniq 5","Ioniq 6"],
+"Kia":["Morning","K3","K5","K8","K9","Sportage","Sorento","Carnival","Seltos","EV6","EV9"],
+"Genesis":["G70","G80","G90","GV60","GV70","GV80"],
+"Chevrolet":["Spark","Malibu","Trailblazer","Equinox","Traverse","Tahoe"],
+"Renault Korea":["SM3","SM5","SM6","QM3","QM5","QM6","XM3","Grand Koleos"],
+"KG Mobility":["Tivoli","Korando","Torres","Rexton","Musso"],
+"BMW":["1 Series","2 Series","3 Series","5 Series","7 Series","X1","X3","X5","X6","X7"],
+"Mercedes-Benz":["A-Class","C-Class","E-Class","S-Class","GLC","GLE","GLS"],
+"Audi":["A3","A4","A5","A6","A7","A8","Q3","Q5","Q7","Q8"]
+};
+function suggestMakes(){
+ const q=document.getElementById("make").value.trim().toLowerCase(),m=document.getElementById("makeMenu");
+ const names=Object.keys(catalog).filter(x=>x.toLowerCase().includes(q)).slice(0,10);
+ m.innerHTML=names.map(x=>`<div onclick="chooseMake('${x.replace(/'/g,"\\'")}')">${x}</div>`).join("");
+ m.style.display=names.length?"block":"none";
+}
+function chooseMake(make){
+ document.getElementById("make").value=make;
+ document.getElementById("makeMenu").style.display="none";
+ const model=document.getElementById("model");
+ model.innerHTML='<option value="">Избери модел</option>'+catalog[make].map(x=>`<option>${x}</option>`).join("");
+ document.getElementById("modelInput").value="";
+ document.getElementById("modelInput").placeholder="Напиши модел...";
+ document.getElementById("modelInput").focus();
+}
+updatePriceHint();
+updateDutyFromOrigin();
+document.addEventListener("click",e=>{
+ if(!e.target.closest(".autocomplete")){
+ document.getElementById("makeMenu").style.display="none";
+ document.getElementById("modelMenu").style.display="none";
+}
+});
+
+function updatePriceHint(){
+ const eur=Number(val("price"));
+ document.getElementById("priceHint").textContent=eur ? "≈ ₩ "+Math.round(eur*KRW_PER_EUR).toLocaleString("ko-KR") : "≈ ₩ —";
+ calculateLanded();
+}
+function updateDutyFromOrigin(){
+ const origin=document.getElementById("origin")?.value||"korea";
+ const duty=document.getElementById("duty");
+ if(duty) duty.value=origin==="korea" ? 0 : 10;
+}
+
+function calculateLanded(){
+ const car=Number(val("price"))||0, ship=Number(val("shipping"))||0, insurance=Number(val("insurance"))||0;
+ const port=Number(val("port"))||0, broker=Number(val("broker"))||0, other=Number(val("other"))||0;
+ const homologation=Number(val("homologation"))||0, registration=Number(val("registration"))||0;
+ const dutyRate=(Number(val("duty"))||0)/100, vatRate=(Number(val("vat"))||0)/100;
+ const customsBase=car+ship+insurance;
+ const duty=customsBase*dutyRate;
+ const vatBase=customsBase+duty;
+ const vat=vatBase*vatRate;
+ const total=car+ship+insurance+duty+vat+port+broker+homologation+registration+other;
+ const el=document.getElementById("landed");
+ if(el) el.value=total ? ("€ "+total.toLocaleString("bg-BG",{maximumFractionDigits:0})) : "";
+})):"";
+}
+function suggestModels(){
+ const make=document.getElementById("make").value.trim();
+ const q=document.getElementById("modelInput").value.trim().toLowerCase();
+ const menu=document.getElementById("modelMenu");
+ const models=catalog[make]||[];
+ const matches=models.filter(x=>x.toLowerCase().includes(q)).slice(0,12);
+ menu.innerHTML=matches.map(x=>`<div onclick="chooseModel('${x.replace(/'/g,"\\'")}')">${x}</div>`).join("");
+ menu.style.display=matches.length?"block":"none";
+}
+function chooseModel(modelName){
+ document.getElementById("modelInput").value=modelName;
+ document.getElementById("model").value=modelName;
+ document.getElementById("modelMenu").style.display="none";
+}
+
+function val(id){return document.getElementById(id).value.trim()}
+const KRW_PER_EUR=1620.54; // reference rate for 21 Aug 2026; can be refreshed later
+function updatePriceHint(){
+ const v=Number(val("price")), el=document.getElementById("priceHint");
+ el.textContent=v ? "≈ € "+(v/KRW_PER_EUR).toLocaleString("bg-BG",{maximumFractionDigits:0}) : "≈ € —";
+}
+document.getElementById("price").addEventListener("input",updatePriceHint);
+
+function runSearch(){
+ const make=val("make"),model=val("modelInput"),price=val("price"),yf=val("yf"),yt=val("yt"),km=val("km"),source=val("source"),count=val("count");
+ const status=document.getElementById("status"),results=document.getElementById("results");
+ status.style.display="block";status.textContent="Подготвям търсенето…";results.innerHTML="";calculateLanded();
+ const rows=[
+ ["Марка и модел",`${make||"Всички"} ${model?"• "+model:""}`,`Цена до ${price?"€ "+Number(price).toLocaleString("bg-BG")+" (≈ ₩ "+Math.round(Number(price)*KRW_PER_EUR).toLocaleString("ko-KR")+")":"без ограничение"}`],
+ ["Година",`${yf||"—"} – ${yt||"—"}`,`Пробег до ${km?Number(km).toLocaleString("bg-BG")+" км":"без ограничение"}`],
+ ["До България",document.getElementById("landed")?.value||"—","включва зададените транспортни, митнически и регистрационни разходи"],
+ ["Източник",source==="both"?"Encar + KB차차차":source==="kb"?"KB차차차":"Encar",`До ${count} резултата`]
+ ];
+ rows.forEach(x=>{const d=document.createElement("div");d.className="result";d.innerHTML=`<div><h3>${x[0]}</h3><div>${x[1]}</div><div class="meta">${x[2]}</div></div><span class="tag">Готово</span>`;results.appendChild(d)});
+ window.open(source==="kb"?"https://www.kbchachacha.com/":"https://www.encar.com/","_blank","noopener");
+}
+function clearAll(){location.reload()}
+</script>
+</body></html>
