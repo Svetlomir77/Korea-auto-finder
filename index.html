@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Korea Auto Finder</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f4f7fb;color:#172033}
+.wrap{max-width:1100px;margin:auto;padding:18px 14px}
+.card{background:#fff;padding:20px;border-radius:18px;box-shadow:0 4px 18px #0000000d}
+h1{margin:0 0 6px;font-size:28px}
+p{color:#667085}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.full{grid-column:1/-1}
+label{font-size:13px;font-weight:800;display:block;margin-bottom:6px}
+input,select{width:100%;padding:11px;border:1px solid #d7deea;border-radius:10px;background:#fff;font-size:15px}
+.actions{margin-top:18px}
+button{background:#2563eb;color:#fff;border:0;padding:13px 18px;border-radius:10px;font-weight:800;font-size:15px}
+.status{margin-top:15px;padding:12px;background:#f5f8fc;border-radius:10px}
+.results{margin-top:15px;display:grid;gap:12px}
+.car{border:1px solid #e1e7f0;border-radius:14px;padding:14px;display:grid;grid-template-columns:110px 1fr auto;gap:14px;align-items:center}
+.car img{width:110px;height:80px;object-fit:cover;border-radius:9px;background:#eee}
+.price{font-weight:900;font-size:19px}
+.meta{color:#667085;font-size:13px;margin-top:4px}
+.tag{display:inline-block;background:#e9f8ef;color:#167447;padding:8px 10px;border-radius:8px;font-weight:800;font-size:12px;text-decoration:none}
+.calc{border-top:1px solid #e1e7f0;padding-top:14px;margin-top:8px}
+.note{background:#fff8e6;border:1px solid #f3d58a;padding:10px;border-radius:10px;font-size:13px;margin-top:8px}
+.autocomplete{position:relative}
+.menu{position:absolute;z-index:10;left:0;right:0;background:#fff;border:1px solid #d7deea;border-radius:10px;display:none;max-height:220px;overflow:auto;box-shadow:0 8px 20px #0002}
+.menu div{padding:10px;cursor:pointer}
+.menu div:hover{background:#eef4ff}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.car{grid-template-columns:80px 1fr}.car img{width:80px;height:65px}.car>div:last-child{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+<h1>🇰🇷 Korea Auto Finder</h1>
+<p>Търсачка за автомобили от Корея с калкулатор на крайната цена до България.</p>
+
+<div class="grid">
+<div class="full">
+<label>Пазар / източник</label>
+<select id="source"><option value="korea" selected>🇰🇷 Корея</option></select>
+</div>
+
+<div class="autocomplete">
+<label>Марка</label>
+<input id="make" autocomplete="off" placeholder="Избери или напиши марка">
+<div id="makeMenu" class="menu"></div>
+</div>
+
+<div class="autocomplete">
+<label>Модел</label>
+<input id="model" autocomplete="off" placeholder="Избери марка">
+<div id="modelMenu" class="menu"></div>
+</div>
+
+<div><label>Цена до (€)</label><input id="price" type="number" placeholder="20000"></div>
+<div><label>Година от</label><input id="yf" type="number" placeholder="2021"></div>
+<div><label>Година до</label><input id="yt" type="number" placeholder="2026"></div>
+<div><label>Пробег до (км)</label><input id="km" type="number" placeholder="100000"></div>
+
+<div><label>Двигател</label>
+<select id="fuel">
+<option value="">Всички</option><option value="diesel">Дизел</option>
+<option value="gasoline">Бензин</option><option value="hybrid">Хибрид</option>
+<option value="electric">Електрически</option><option value="lpg">LPG</option>
+</select></div>
+
+<div><label>Скоростна кутия</label>
+<select id="transmission"><option value="">Всички</option><option value="auto">Автоматик</option><option value="manual">Ръчна</option></select>
+</div>
+
+<div><label>Брой резултати</label>
+<select id="limit"><option>5</option><option selected>10</option><option>20</option></select></div>
+</div>
+
+<div class="calc">
+<b>🇧🇬 Калкулатор цена до България</b>
+<div class="grid" style="margin-top:10px">
+<div><label>KRW → €</label><input id="fx" type="number" value="1620.54" step="0.01"></div>
+<div><label>Транспорт Корея (€)</label><input id="shipping" type="number" value="1800"></div>
+<div><label>Застраховка (€)</label><input id="insurance" type="number" value="150"></div>
+
+<div class="full">
+<label>Произход и мито</label>
+<select id="origin">
+<option value="preferential" selected>🇰🇷 Доказан корейски преференциален произход — 0% мито</option>
+<option value="standard">Без доказан преференциален произход — 10% мито</option>
+</select>
+</div>
+
+<div><label>Мито (%)</label><input id="duty" type="number" value="0" readonly></div>
+<div><label>ДДС (%)</label><input id="vat" type="number" value="20"></div>
+<div><label>Пристанище (€)</label><input id="port" type="number" value="350"></div>
+<div><label>Митнически агент (€)</label><input id="broker" type="number" value="150"></div>
+<div><label>Хомологация (€)</label><input id="homologation" type="number" value="250"></div>
+<div><label>Регистрация (€)</label><input id="registration" type="number" value="100"></div>
+</div>
+<div class="note">При доказан преференциален корейски произход митото е 0%. Без доказателство за преференциален произход калкулаторът използва 10%. Провери документите за конкретния автомобил преди покупка.</div>
+</div>
+
+<div class="actions"><button onclick="searchCars()">🔎 Търси реални обяви</button></div>
+<div id="status" class="status" style="display:none"></div>
+<div id="results" class="results"></div>
+</div></div>
+
+<script>
+const catalog={
+"Hyundai":["Avante","Sonata","Grandeur","Tucson","Santa Fe","Palisade","Kona","Staria","Ioniq 5","Ioniq 6","Ioniq 9","Casper","Venue","i30","i40","Veloster","Nexo","Porter"],
+"Kia":["K3","K4","K5","K8","K9","Morning","Ray","Picanto","Rio","Cerato","Forte","K7","Sportage","Sorento","Carnival","Seltos","Soul","Stonic","Niro","EV3","EV6","EV9","Mohave","Telluride"],
+"Genesis":["G70","G80","G90","GV60","GV70","GV80"],
+"Chevrolet":["Spark","Malibu","Impala","Cruze","Trax","Trailblazer","Equinox","Traverse","Tahoe","Colorado","Bolt"],
+"KG Mobility":["Tivoli","Korando","Torres","Rexton","Musso","Musso Grand"],
+"Renault Korea":["SM3","SM5","SM6","QM3","QM5","QM6","XM3","Arkana"],
+"Samsung Motors":["SM3","SM5","SM6","QM3","QM5","QM6","XM3"],
+"Daewoo":["Matiz","Lacetti","Nubira","Lanos","Leganza","Tosca","Gentra","Winstorm"],
+"BMW":["1 Series","2 Series","3 Series","4 Series","5 Series","6 Series","7 Series","8 Series","X1","X2","X3","X4","X5","X6","X7","XM"],
+"Mercedes-Benz":["A-Class","B-Class","C-Class","E-Class","S-Class","CLA","CLS","GLA","GLB","GLC","GLE","GLS"],
+"Audi":["A1","A3","A4","A5","A6","A7","A8","Q2","Q3","Q4","Q5","Q7","Q8","e-tron"],
+"Volkswagen":["Golf","Polo","Passat","Arteon","Tiguan","Touareg","T-Roc","ID.3","ID.4","ID.6"],
+"Volvo":["S60","S90","V60","V90","XC40","XC60","XC90"],
+"Toyota":["Camry","Corolla","Prius","C-HR","RAV4","Highlander","Land Cruiser","Sienna","Alphard"],
+"Lexus":["ES","IS","GS","LS","UX","NX","RX","GX","LX"],
+"Honda":["Civic","Accord","CR-V","HR-V","Pilot","Odyssey"],
+"Nissan":["Altima","Maxima","Sentra","Leaf","Juke","Qashqai","X-Trail","Murano","Pathfinder"],
+"Infiniti":["Q30","Q50","Q60","Q70","QX30","QX50","QX60","QX80"],
+"Ford":["Fiesta","Focus","Fusion","Mustang","Explorer","Escape","Edge","Expedition","F-150"],
+"Jeep":["Renegade","Compass","Cherokee","Grand Cherokee","Wrangler","Gladiator"],
+"Cadillac":["CT4","CT5","CT6","XT4","XT5","XT6","Escalade"],
+"Lincoln":["MKZ","Continental","Corsair","Nautilus","Aviator","Navigator"],
+"Porsche":["718","911","Panamera","Macan","Cayenne","Taycan"],
+"Land Rover":["Defender","Discovery","Discovery Sport","Range Rover","Range Rover Sport","Range Rover Velar","Evoque"],
+"Jaguar":["XE","XF","XJ","F-Pace","F-Type","I-Pace"],
+"Tesla":["Model 3","Model S","Model X","Model Y"],
+"Peugeot":["208","308","408","508","2008","3008","5008"],
+"Citroen":["C3","C4","C5","C5 Aircross","Berlingo"],
+"DS":["DS3","DS4","DS7","DS9"],
+"Mini":["Cooper","Clubman","Countryman"],
+"Maserati":["Ghibli","Quattroporte","Levante","Grecale"],
+"Ferrari":["Roma","Portofino","F8","296","812"],
+"Lamborghini":["Urus","Huracan","Aventador"],
+"McLaren":["570S","720S","765LT","GT"],
+"Subaru":["Impreza","Legacy","Outback","Forester","XV","WRX","BRZ","Ascent"],
+"Mitsubishi":["Lancer","Outlander","Eclipse Cross","Pajero","ASX"],
+"Suzuki":["Swift","Vitara","Jimny","S-Cross"],
+"Isuzu":["D-Max","MU-X"],
+"Fiat":["500","500X","Panda","Tipo","Doblo"],
+"Alfa Romeo":["Giulia","Stelvio"],
+"Chrysler":["300C","Pacifica","Voyager"],
+"Dodge":["Charger","Challenger","Durango","Ram"],
+"RAM":["1500","2500","3500"],
+"Buick":["Encore","Envision","Enclave"],
+"Rivian":["R1T","R1S"],
+"Polestar":["2","3","4"],
+"BYD":["Atto 3","Dolphin","Seal","Han","Tang"],
+"Geely":["Emgrand","Coolray","Geometry C"],
+"Chery":["Tiggo 4","Tiggo 7","Tiggo 8"],
+"JAC":["JS4","JS6","T8"],
+"MG":["MG3","MG4","ZS","HS","Marvel R"]
+};
+
+function $(id){return document.getElementById(id)}
+function n(id){return Number($(id)?.value)||0}
+function money(v){return "€ "+Number(v||0).toLocaleString("bg-BG",{maximumFractionDigits:0})}
+
+function showMenu(id,items,chooseFn){
+  const m=$(id);
+  m.innerHTML=items.map(x=>`<div data-value="${String(x).replace(/"/g,"&quot;")}">${x}</div>`).join("");
+  m.querySelectorAll("div").forEach(el=>el.onclick=()=>chooseFn(el.dataset.value));
+  m.style.display=items.length?"block":"none";
+}
+function suggestMakes(){
+  const q=$("make").value.toLowerCase();
+  showMenu("makeMenu",Object.keys(catalog).filter(x=>x.toLowerCase().includes(q)),"chooseMake");
+}
+function chooseMake(x){
+  $("make").value=x;$("model").value="";$("model").placeholder="Избери или напиши модел";$("makeMenu").style.display="none";
+}
+function suggestModels(){
+  const a=catalog[$("make").value]||[];
+  const q=$("model").value.toLowerCase();
+  showMenu("modelMenu",a.filter(x=>x.toLowerCase().includes(q)),"chooseModel");
+}
+function chooseModel(x){$("model").value=x;$("modelMenu").style.display="none"}
+
+$("make").addEventListener("input",suggestMakes);
+$("make").addEventListener("focus",suggestMakes);
+$("model").addEventListener("input",suggestModels);
+$("model").addEventListener("focus",suggestModels);
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".autocomplete")){$("makeMenu").style.display="none";$("modelMenu").style.display="none"}
+});
+
+function updateDuty(){
+  $("duty").value=$("origin").value==="preferential"?0:10;
+}
+$("origin").addEventListener("change",updateDuty);
+updateDuty();
+
+function landed(price){
+  const ship=n("shipping"),ins=n("insurance");
+  const customsBase=price+ship+ins;
+  const duty=customsBase*(n("duty")/100);
+  const vatBase=customsBase+duty;
+  const vat=vatBase*(n("vat")/100);
+  const extras=n("port")+n("broker")+n("homologation")+n("registration");
+  return {ship,duty,vat,total:price+ship+ins+duty+vat+extras};
+}
+
+let lastKey="",lastAt=0,lastData=null;
+
+async function searchCars(){
+  const status=$("status"),out=$("results");
+  status.style.display="block";out.innerHTML="";
+  const p=new URLSearchParams();
+  p.set("source","korea");
+  if($("make").value)p.set("brand",$("make").value);
+  if($("model").value)p.set("model",$("model").value);
+  if($("price").value)p.set("price_max",Math.round(Number($("price").value)*n("fx")));
+  if($("yf").value)p.set("year_from",$("yf").value);
+  if($("yt").value)p.set("year_to",$("yt").value);
+  if($("km").value)p.set("mileage_max",$("km").value);
+  if($("fuel").value)p.set("fuel_type",$("fuel").value);
+  if($("transmission").value)p.set("transmission",$("transmission").value);
+  p.set("limit",$("limit").value);
+
+  const key=p.toString(),now=Date.now();
+  if(lastData&&key===lastKey&&now-lastAt<60000){
+    status.textContent="Кеширан резултат — без нова API заявка.";
+    return renderResults(lastData);
+  }
+
+  status.textContent="Търся реални обяви в Корея…";
+  try{
+    const r=await fetch("/api/search?"+p.toString(),{cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||"Грешка");
+    lastKey=key;lastAt=now;lastData=d;
+    status.textContent=`Намерени ${d.total_count||d.results?.length||0} обяви.`+(d.errors?.length?" "+d.errors.join(" | "):"");
+    renderResults(d);
+  }catch(e){
+    status.textContent="Неуспешно търсене: "+e.message;
+  }
+}
+
+function renderResults(d){
+  const out=$("results");
+  if(!d.results||!d.results.length){
+    out.innerHTML='<div class="status">Няма намерени обяви по зададените критерии.</div>';
+    return;
+  }
+  d.results.forEach(c=>{
+    const price=Number(c.price_krw||0)/n("fx");
+    const x=landed(price);
+    const orig=`${Number(c.price_krw||0).toLocaleString("ko-KR")} ₩ ≈ ${money(price)}`;
+    const el=document.createElement("div");
+    el.className="car";
+    el.innerHTML=`
+      <img src="${c.thumbnail||""}" onerror="this.style.visibility='hidden'">
+      <div>
+        <b>🇰🇷 ${c.manufacturer||""} ${c.model||""}</b>
+        <div class="meta">${c.year||"—"} • ${Number(c.mileage_km||0).toLocaleString("bg-BG")} км • ${c.fuel_type||"—"} • ${c.transmission||"—"}</div>
+        <div class="price">${orig}</div>
+        <div style="margin-top:8px;padding:9px;background:#f5f8fc;border-radius:9px;font-size:13px">
+          <b>🇧🇬 Цена до България: ${money(x.total)}</b><br>
+          Транспорт: ${money(x.ship)} • Мито: ${money(x.duty)} • ДДС: ${money(x.vat)}
+        </div>
+      </div>
+      <div><a class="tag" href="${c.listing_url||"#"}" target="_blank" rel="noopener">Обявата ↗</a></div>`;
+    out.appendChild(el);
+  });
+}
+</script>
+</body>
+</html>
