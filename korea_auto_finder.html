@@ -60,7 +60,7 @@ button{background:#2563eb;color:#fff}.secondary{background:#edf1f6;color:#344054
 <div><label>Пристанищни/терминални (€)</label><input id="port" type="number" value="350" oninput="calculateLanded()"></div>
 <div><label>Митнически агент (€)</label><input id="broker" type="number" value="150" oninput="calculateLanded()"></div>
 <div><label>Произход на автомобила</label><select id="origin" onchange="updateDutyFromOrigin()"><option value="korea" selected>🇰🇷 Корейски произход — 0% мито</option><option value="other">Друг произход — 10% мито</option></select></div>
-<div><label>Мито (%)</label><input id="duty" type="number" value="0" step="0.1"  readonly></div>
+<div><label>Мито (%)</label><input id="duty" type="number" value="0" step="0.1" readonly></div>
 <div><label>ДДС (%)</label><input id="vat" type="number" value="20" step="0.1" oninput="calculateLanded()"></div>
 <div><label>Хомологация/технически разходи (€)</label><input id="homologation" type="number" value="250" oninput="calculateLanded()"></div>
 <div><label>Регистрация/КАТ (€)</label><input id="registration" type="number" value="100" oninput="calculateLanded()"></div>
@@ -79,7 +79,7 @@ button{background:#2563eb;color:#fff}.secondary{background:#edf1f6;color:#344054
 </div></div>
 <div><label>Скоростна кутия</label><select id="gear"><option>Всички</option><option>Автоматик</option><option>Ръчна</option></select></div>
 <div><label>Резултати</label><select id="count"><option>5</option><option selected>10</option><option>20</option></select></div>
-<div><label>Сайт</label><select id="source"><option value="korea">🇰🇷 Корея</option></select></div>
+<div><label>Сайт</label><select id="source"><option value="encar">Encar</option><option value="kb">KB차차차</option><option value="both">Encar + KB차차차</option></select></div>
 </div>
 
 <div class="actions">
@@ -140,9 +140,10 @@ function updatePriceHint(){
  calculateLanded();
 }
 function updateDutyFromOrigin(){
- const origin=document.getElementById("origin")?.value||"korea";
- const duty=document.getElementById("duty");
- if(duty) duty.value=origin==="korea" ? 0 : 10;
+  const origin=val("origin");
+  const duty=document.getElementById("duty");
+  duty.value = origin === "korea" ? "0" : "10";
+  calculateLanded();
 }
 
 function calculateLanded(){
